@@ -140,7 +140,7 @@ class ParticleSystem {
         }
 
         // Smoke effect
-        for (let i = 0; i < 8; i++) {
+        for (let i = 0; i < 4; i++) {
             this.particles.push(new SmokeParticle(
                 canvasPos.x,
                 canvasPos.y
@@ -404,26 +404,26 @@ class ExplosionParticle extends Particle {
 class SmokeParticle extends Particle {
     constructor(x, y) {
         super(x, y);
-        this.size = Math.random() * 15 + 10;
-        this.decay = 0.015;
-        this.vy = -Math.random() * 2 - 1;
-        this.vx = (Math.random() - 0.5) * 2;
+        this.size = Math.random() * 8 + 5;
+        this.decay = 0.02;
+        this.vy = -Math.random() * 1.5 - 0.5;
+        this.vx = (Math.random() - 0.5) * 1.5;
     }
 
     update() {
         super.update();
         this.x += this.vx;
         this.y += this.vy;
-        this.size += 0.5;
+        this.size += 0.2;
         this.vy *= 0.98;
     }
 
     draw(ctx) {
         ctx.save();
-        ctx.globalAlpha = this.life * 0.3;
+        ctx.globalAlpha = this.life * 0.2;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fillStyle = '#888';
+        ctx.fillStyle = '#666';
         ctx.fill();
         ctx.restore();
     }

@@ -49,10 +49,14 @@ class NavakankariGame {
         this.moveLog = [];
         this.millsFormed = { 1: 0, 2: 0 };
         this.totalMoves = 0;
+        this.positionHistory = []; // Track positions for draw detection
+        this.maxMovesWithoutCapture = 0; // For 50-move rule
         
         // Game mode
         this.gameMode = 'two-player'; // 'two-player' or 'vs-ai'
         this.aiDifficulty = 'medium';
+        this.allowUndo = true;
+        this.allowHints = true;
         this.ai = null;
         this.isAITurn = false;
         
@@ -251,15 +255,19 @@ class NavakankariGame {
                 btn.classList.add('active');
                 
                 this.gameMode = btn.dataset.mode;
-                const aiDifficultyDiv = document.getElementById('ai-difficulty');
+                const aiControls = document.getElementById('ai-controls-wrapper');
                 
                 if (this.gameMode === 'vs-ai') {
-                    aiDifficultyDiv.style.display = 'flex';
+                    aiControls.style.display = 'flex';
                     document.getElementById('p2-name').textContent = 'AI';
                     document.getElementById('p2-avatar-icon').textContent = '🤖';
+                    // Read current options
+                    this.aiDifficulty = document.getElementById('ai-level').value;
+                    this.allowUndo = document.getElementById('allow-undo').checked;
+                    this.allowHints = document.getElementById('allow-hints').checked;
                     this.ai = new NavakankariAI(this, this.aiDifficulty);
                 } else {
-                    aiDifficultyDiv.style.display = 'none';
+                    aiControls.style.display = 'none';
                     document.getElementById('p2-name').textContent = 'Player 2';
                     document.getElementById('p2-avatar-icon').textContent = '👤';
                     this.ai = null;
@@ -275,6 +283,17 @@ class NavakankariGame {
             if (this.ai) {
                 this.ai.setDifficulty(this.aiDifficulty);
             }
+        });
+
+        // AI options
+        document.getElementById('allow-undo').addEventListener('change', (e) => {
+            this.allowUndo = e.target.checked;
+            this.updateUI();
+        });
+
+        document.getElementById('allow-hints').addEventListener('change', (e) => {
+            this.allowHints = e.target.checked;
+            this.updateUI();
         });
 
         // Move history toggle
@@ -410,7 +429,17 @@ class NavakankariGame {
                 this.highlightRemovablePieces();
                 this.updateStatus(`${this.getPlayerName()} formed a mill! Remove an opponent's piece.`, '⭐');
             } else {
+                // Track moves without capture for draw detection
+                this.maxMovesWithoutCapture++;
+                
+                // Track position for repetition detection
+                this.positionHistory.push(this.getBoardHash());
+                if (this.positionHistory.length > 100) this.positionHistory.shift();
+                
                 this.switchPlayer();
+                
+                // Check for draw
+                if (this.checkDrawCondition()) return;
             }
 
             // Update flying phase indicator
@@ -469,6 +498,9 @@ class NavakankariGame {
 
         // Update captured pieces display
         this.updateCapturedPiecesDisplay();
+
+        // Reset moves without capture counter
+        this.maxMovesWithoutCapture = 0;
 
         this.mustRemove = false;
         this.clearHighlights();
@@ -661,27 +693,65 @@ class NavakankariGame {
         if (this.gameMode !== 'vs-ai' || this.currentPlayer !== 2 || !this.ai) return;
         
         this.isAITurn = true;
-        this.updateStatus('AI is thinking...', '🤔');
+        this.updateUI();
         
         try {
-            const move = await this.ai.getBestMove();
-            
-            if (move) {
-                if (move.type === 'place') {
-                    await this.handlePlacement(move.position);
-                } else if (move.type === 'move') {
-                    this.selectedPiece = move.from;
-                    this.validMoves = [move.to];
-                    await this.handleMovement(move.to);
-                } else if (move.type === 'remove') {
-                    this.handleRemoval(move.position);
+            // Keep making moves while it's AI turn (could be a placement then a removal)
+            while (this.currentPlayer === 2 && !this.gameOver) {
+                this.updateStatus('AI is thinking...', '🤔');
+                const move = await this.ai.getBestMove();
+                
+                if (move) {
+                    if (move.type === 'place') {
+                        await this.handlePlacement(move.position);
+                    } else if (move.type === 'move') {
+                        this.selectedPiece = move.from;
+                        this.validMoves = [move.to];
+                        await this.handleMovement(move.to);
+                    } else if (move.type === 'remove') {
+                        this.handleRemoval(move.position);
+                    }
+                    
+                    // Small delay between actions in a sequence (like mill then remove)
+                    if (this.mustRemove) {
+                        await new Promise(resolve => setTimeout(resolve, 800));
+                    }
+                } else {
+                    console.warn('AI returned no move');
+                    break;
                 }
             }
         } catch (error) {
             console.error('AI error:', error);
+            // Provide fallback: try to make any valid move
+            this.updateStatus('AI encountered an issue, making fallback move...', '⚠️');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            try {
+                if (this.mustRemove) {
+                    const opponent = this.currentPlayer === 1 ? 2 : 1;
+                    const removable = this.getPlayerPositions(opponent).filter(p => 
+                        !this.isPositionInMill(p, opponent) || 
+                        this.getPlayerPositions(opponent).every(pos => this.isPositionInMill(pos, opponent))
+                    );
+                    if (removable.length > 0) {
+                        this.handleRemoval(removable[0]);
+                    }
+                } else if (this.phase === 'placing') {
+                    for (let i = 0; i < 24; i++) {
+                        if (this.board[i] === null) {
+                            await this.handlePlacement(i);
+                            break;
+                        }
+                    }
+                }
+            } catch (fallbackError) {
+                console.error('AI fallback also failed:', fallbackError);
+            }
         }
         
         this.isAITurn = false;
+        this.updateUI();
     }
 
     // Hint System
@@ -848,19 +918,65 @@ class NavakankariGame {
     checkWinCondition() {
         if (this.phase !== 'moving') return;
 
-        const opponent = this.currentPlayer === 1 ? 2 : 1;
+        const currentPlayer = this.currentPlayer;
+        const opponent = currentPlayer === 1 ? 2 : 1;
         
-        if (this.piecesOnBoard[opponent] < 3) {
-            this.endGame(this.currentPlayer === 1 ? 2 : 1, 'Opponent has fewer than 3 pieces');
+        // Check if CURRENT player (who needs to move) has fewer than 3 pieces - they lose
+        if (this.piecesOnBoard[currentPlayer] < 3) {
+            this.endGame(opponent, 'Reduced to fewer than 3 pieces');
             return;
         }
 
-        const opponentPositions = this.getPlayerPositions(this.currentPlayer);
-        const canMove = opponentPositions.some(pos => this.getValidMoves(pos).length > 0);
+        // Check if CURRENT player (who needs to move) is blocked - they lose
+        const currentPlayerPositions = this.getPlayerPositions(currentPlayer);
+        const canMove = currentPlayerPositions.some(pos => this.getValidMoves(pos).length > 0);
 
         if (!canMove && !this.mustRemove) {
-            this.endGame(this.currentPlayer === 1 ? 2 : 1, 'Opponent cannot make any moves');
+            this.endGame(opponent, 'All pieces are blocked');
         }
+    }
+
+    checkDrawCondition() {
+        // 50-move rule: if 50 moves with no capture, declare draw
+        if (this.maxMovesWithoutCapture >= 50) {
+            this.endDraw('50 moves without capture');
+            return true;
+        }
+
+        // Threefold repetition
+        const currentPosition = this.getBoardHash();
+        const repetitions = this.positionHistory.filter(h => h === currentPosition).length;
+        if (repetitions >= 3) {
+            this.endDraw('Threefold repetition');
+            return true;
+        }
+
+        return false;
+    }
+
+    getBoardHash() {
+        // Create a hash of the current board position
+        let hash = this.currentPlayer + ':';
+        for (let i = 0; i < 24; i++) {
+            hash += (this.board[i] || '0');
+        }
+        return hash;
+    }
+
+    endDraw(reason) {
+        this.gameOver = true;
+        soundManager.playClick();
+        
+        document.getElementById('winner-text').textContent = 'Draw!';
+        document.getElementById('win-reason').textContent = reason;
+        document.getElementById('win-moves').textContent = this.totalMoves;
+        document.getElementById('win-mills').textContent = this.millsFormed[1] + this.millsFormed[2];
+        
+        setTimeout(() => {
+            document.getElementById('win-modal').classList.add('active');
+        }, 500);
+        
+        this.updateStatus(`Game Over! Draw - ${reason}`, '🤝');
     }
 
     endGame(winner, reason) {
@@ -906,6 +1022,30 @@ class NavakankariGame {
         document.getElementById('p2-on-board').textContent = this.piecesOnBoard[2];
         document.getElementById('p2-captured').textContent = this.capturedPieces[2];
 
+        // Add visual warnings for low piece counts
+        const p1OnBoard = document.getElementById('p1-on-board');
+        const p2OnBoard = document.getElementById('p2-on-board');
+        
+        // Clear existing classes
+        p1OnBoard.classList.remove('critical', 'warning', 'flying');
+        p2OnBoard.classList.remove('critical', 'warning', 'flying');
+        
+        if (this.phase === 'moving' || this.piecesToPlace[1] === 0) {
+            if (this.piecesOnBoard[1] === 3) {
+                p1OnBoard.classList.add('flying');
+            } else if (this.piecesOnBoard[1] === 4) {
+                p1OnBoard.classList.add('warning');
+            }
+        }
+        
+        if (this.phase === 'moving' || this.piecesToPlace[2] === 0) {
+            if (this.piecesOnBoard[2] === 3) {
+                p2OnBoard.classList.add('flying');
+            } else if (this.piecesOnBoard[2] === 4) {
+                p2OnBoard.classList.add('warning');
+            }
+        }
+
         const p1Turn = document.getElementById('p1-turn');
         const p2Turn = document.getElementById('p2-turn');
         
@@ -917,8 +1057,13 @@ class NavakankariGame {
             p2Turn.classList.remove('inactive');
         }
 
-        document.getElementById('undo-btn').disabled = this.moveHistory.length === 0 || this.isAITurn;
-        document.getElementById('hint-btn').disabled = this.gameOver || this.isAITurn;
+        let undoDisabled = this.moveHistory.length === 0 || this.isAITurn;
+        if (this.gameMode === 'vs-ai' && !this.allowUndo) undoDisabled = true;
+        document.getElementById('undo-btn').disabled = undoDisabled;
+
+        let hintDisabled = this.gameOver || this.isAITurn;
+        if (this.gameMode === 'vs-ai' && !this.allowHints) hintDisabled = true;
+        document.getElementById('hint-btn').disabled = hintDisabled;
         
         // Animate stat changes
         if (typeof gsap !== 'undefined') {
@@ -953,7 +1098,9 @@ class NavakankariGame {
             capturedPieces: { ...this.capturedPieces },
             mustRemove: this.mustRemove,
             millsFormed: { ...this.millsFormed },
-            totalMoves: this.totalMoves
+            totalMoves: this.totalMoves,
+            positionHistoryLength: this.positionHistory.length,
+            maxMovesWithoutCapture: this.maxMovesWithoutCapture
         });
 
         if (this.moveHistory.length > 20) {
@@ -963,32 +1110,57 @@ class NavakankariGame {
 
     undo() {
         if (this.moveHistory.length === 0 || this.isAITurn) return;
+        
+        // Check if undo is allowed in AI mode
+        if (this.gameMode === 'vs-ai' && !this.allowUndo) return;
 
-        const state = this.moveHistory.pop();
-        this.board = state.board;
-        this.currentPlayer = state.currentPlayer;
-        this.phase = state.phase;
-        this.piecesToPlace = state.piecesToPlace;
-        this.piecesOnBoard = state.piecesOnBoard;
-        this.capturedPieces = state.capturedPieces;
-        this.mustRemove = state.mustRemove;
-        this.millsFormed = state.millsFormed;
-        this.totalMoves = state.totalMoves;
+        // Define single undo operation
+        const doSingleUndo = () => {
+            const state = this.moveHistory.pop();
+            this.board = state.board;
+            this.currentPlayer = state.currentPlayer;
+            this.phase = state.phase;
+            this.piecesToPlace = state.piecesToPlace;
+            this.piecesOnBoard = state.piecesOnBoard;
+            this.capturedPieces = state.capturedPieces;
+            this.mustRemove = state.mustRemove;
+            this.millsFormed = state.millsFormed;
+            this.totalMoves = state.totalMoves;
+            this.maxMovesWithoutCapture = state.maxMovesWithoutCapture || 0;
+            
+            // Trim position history back to saved length
+            if (state.positionHistoryLength !== undefined) {
+                this.positionHistory = this.positionHistory.slice(0, state.positionHistoryLength);
+            }
+            
+            if (this.moveLog.length > 0) {
+                this.moveLog.pop();
+            }
+        };
+
+        // Perform initial undo (undoes the last action)
+        doSingleUndo();
+        
+        // If vs AI, keep undoing until it's Player 1's turn
+        // This handles cases where AI made multiple moves (e.g. place + remove)
+        if (this.gameMode === 'vs-ai') {
+            let safety = 0;
+            while (this.currentPlayer === 2 && this.moveHistory.length > 0 && safety < 10) {
+                doSingleUndo();
+                safety++;
+            }
+        }
+        
         this.selectedPiece = null;
         this.validMoves = [];
         this.gameOver = false;
-
+        
         this.clearHighlights();
         if (this.mustRemove) {
             this.highlightRemovablePieces();
         }
 
-        // Remove last move from log
-        if (this.moveLog.length > 0) {
-            this.moveLog.pop();
-            this.updateMoveHistoryDisplay();
-        }
-
+        this.updateMoveHistoryDisplay();
         this.updateCapturedPiecesDisplay();
         this.updatePhaseIndicator();
         this.renderPieces();
@@ -1018,6 +1190,8 @@ class NavakankariGame {
         this.totalMoves = 0;
         this.isAITurn = false;
         this.hintPosition = null;
+        this.positionHistory = [];
+        this.maxMovesWithoutCapture = 0;
 
         // Reset AI if in AI mode
         if (this.gameMode === 'vs-ai') {

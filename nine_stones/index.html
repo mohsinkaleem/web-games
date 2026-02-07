@@ -18,8 +18,7 @@
         <header class="game-header">
             <div class="header-content">
                 <div class="title-section">
-                    <h1>नवकांकरी</h1>
-                    <h2>Navakankari</h2>
+                    <h1>Nine Pebbles</h1>
                     <p class="subtitle">The Ancient Indian Strategy Game</p>
                 </div>
                 <div class="header-controls">
@@ -44,13 +43,24 @@
                     <span>vs AI</span>
                 </button>
             </div>
-            <div class="ai-difficulty" id="ai-difficulty" style="display: none;">
-                <label>Difficulty:</label>
-                <select id="ai-level">
-                    <option value="easy">Easy</option>
-                    <option value="medium" selected>Medium</option>
-                    <option value="hard">Hard</option>
-                </select>
+            <div class="ai-controls-wrapper" id="ai-controls-wrapper" style="display: none;">
+                <div class="ai-difficulty">
+                    <label>Difficulty:</label>
+                    <select id="ai-level">
+                        <option value="easy">Easy</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="hard">Hard</option>
+                        <option value="expert">Expert</option>
+                    </select>
+                </div>
+                <div class="ai-options">
+                    <label class="checkbox-label" title="Enable undo during AI game">
+                        <input type="checkbox" id="allow-undo" checked> <span>Allow Undo</span>
+                    </label>
+                    <label class="checkbox-label" title="Enable hints during AI game">
+                        <input type="checkbox" id="allow-hints" checked> <span>Allow Hints</span>
+                    </label>
+                </div>
             </div>
         </div>
 

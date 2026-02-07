@@ -363,6 +363,65 @@ body::before {
     letter-spacing: 1px;
 }
 
+/* AI Controls */
+.ai-controls-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ai-difficulty {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ai-difficulty label {
+    font-size: 0.9rem;
+    color: var(--cream);
+    opacity: 0.9;
+}
+
+.ai-difficulty select {
+    background: rgba(20, 10, 5, 0.8);
+    color: var(--gold);
+    border: 1px solid var(--gold-dark);
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    flex: 1;
+}
+
+.ai-options {
+    display: flex;
+    gap: 15px;
+    justify-content: space-between;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--cream);
+    user-select: none;
+}
+
+.checkbox-label input {
+    accent-color: var(--gold);
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
 /* Game Controls */
 .game-controls {
     display: flex;
@@ -1278,4 +1337,40 @@ body::before {
 
 [data-tooltip]:hover::after {
     opacity: 1;
+}
+
+/* Danger/Warning Indicators */
+.stat-value.critical {
+    color: #FF4444 !important;
+    animation: pulse-danger 1s ease-in-out infinite;
+}
+
+.stat-value.warning {
+    color: #FFA500 !important;
+}
+
+@keyframes pulse-danger {
+    0%, 100% { 
+        transform: scale(1);
+        text-shadow: 0 0 5px rgba(255, 68, 68, 0.5);
+    }
+    50% { 
+        transform: scale(1.1);
+        text-shadow: 0 0 15px rgba(255, 68, 68, 0.8);
+    }
+}
+
+/* Flying phase indicator */
+.stat-value.flying {
+    color: #00BFFF !important;
+    animation: pulse-flying 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-flying {
+    0%, 100% { 
+        text-shadow: 0 0 5px rgba(0, 191, 255, 0.5);
+    }
+    50% { 
+        text-shadow: 0 0 15px rgba(0, 191, 255, 0.8);
+    }
 }

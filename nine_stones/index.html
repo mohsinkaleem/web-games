@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navakankari - Nine Men's Morris</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Rajdhani:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- GSAP for animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <!-- Howler.js for sounds -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
+    <!-- Canvas Confetti for celebrations -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+    <div class="game-container">
+        <header class="game-header">
+            <div class="header-content">
+                <div class="title-section">
+                    <h1>नवकांकरी</h1>
+                    <h2>Navakankari</h2>
+                    <p class="subtitle">The Ancient Indian Strategy Game</p>
+                </div>
+                <div class="header-controls">
+                    <button class="icon-btn" id="sound-toggle" title="Toggle Sound">
+                        <span class="sound-on">🔊</span>
+                        <span class="sound-off" style="display:none;">🔇</span>
+                    </button>
+                    <button class="icon-btn" id="fullscreen-btn" title="Fullscreen">⛶</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Game Mode Selection -->
+        <div class="game-mode-bar">
+            <div class="mode-selector">
+                <button class="mode-btn active" data-mode="two-player">
+                    <span class="mode-icon">👥</span>
+                    <span>2 Players</span>
+                </button>
+                <button class="mode-btn" data-mode="vs-ai">
+                    <span class="mode-icon">🤖</span>
+                    <span>vs AI</span>
+                </button>
+            </div>
+            <div class="ai-difficulty" id="ai-difficulty" style="display: none;">
+                <label>Difficulty:</label>
+                <select id="ai-level">
+                    <option value="easy">Easy</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="game-content">
+            <!-- Player 1 Panel -->
+            <div class="player-panel player1-panel">
+                <div class="player-info">
+                    <div class="player-avatar player1-avatar">
+                        <div class="avatar-inner">
+                            <span class="avatar-icon">👤</span>
+                        </div>
+                        <div class="avatar-ring"></div>
+                    </div>
+                    <h3 id="p1-name">Player 1</h3>
+                    <div class="player-color saffron"></div>
+                </div>
+                <div class="player-stats">
+                    <div class="stat">
+                        <div class="stat-icon">📦</div>
+                        <span class="stat-label">To Place</span>
+                        <span class="stat-value" id="p1-to-place">9</span>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-icon">🎯</div>
+                        <span class="stat-label">On Board</span>
+                        <span class="stat-value" id="p1-on-board">0</span>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-icon">⚔️</div>
+                        <span class="stat-label">Captured</span>
+                        <span class="stat-value" id="p1-captured">0</span>
+                    </div>
+                </div>
+                <div class="turn-indicator" id="p1-turn">
+                    <span class="turn-text">Your Turn</span>
+                    <div class="turn-glow"></div>
+                </div>
+                <div class="captured-pieces" id="p1-captured-pieces"></div>
+            </div>
+
+            <!-- Game Board -->
+            <div class="board-container">
+                <div class="board-frame">
+                    <canvas id="particle-canvas"></canvas>
+                    <svg class="board-svg" viewBox="0 0 500 500" id="game-board">
+                        <defs>
+                            <pattern id="woodPattern" patternUnits="userSpaceOnUse" width="100" height="100">
+                                <rect width="100" height="100" fill="#D4A574"/>
+                                <path d="M0 20 Q25 15 50 20 T100 20" stroke="#C49B6A" stroke-width="1" fill="none" opacity="0.5"/>
+                                <path d="M0 40 Q25 35 50 40 T100 40" stroke="#C49B6A" stroke-width="1" fill="none" opacity="0.4"/>
+                                <path d="M0 60 Q25 65 50 60 T100 60" stroke="#C49B6A" stroke-width="1" fill="none" opacity="0.5"/>
+                                <path d="M0 80 Q25 75 50 80 T100 80" stroke="#C49B6A" stroke-width="1" fill="none" opacity="0.4"/>
+                            </pattern>
+                            <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
+                                <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+                            </filter>
+                            <filter id="glow">
+                                <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                            <filter id="strongGlow">
+                                <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                            <radialGradient id="saffronPiece" cx="35%" cy="35%">
+                                <stop offset="0%" stop-color="#FFD700"/>
+                                <stop offset="30%" stop-color="#FFB347"/>
+                                <stop offset="70%" stop-color="#FF8C00"/>
+                                <stop offset="100%" stop-color="#CC5500"/>
+                            </radialGradient>
+                            <radialGradient id="greenPiece" cx="35%" cy="35%">
+                                <stop offset="0%" stop-color="#98FB98"/>
+                                <stop offset="30%" stop-color="#90EE90"/>
+                                <stop offset="70%" stop-color="#228B22"/>
+                                <stop offset="100%" stop-color="#006400"/>
+                            </radialGradient>
+                            <linearGradient id="goldShine" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#FFD700"/>
+                                <stop offset="50%" stop-color="#FFA500"/>
+                                <stop offset="100%" stop-color="#FFD700"/>
+                            </linearGradient>
+                        </defs>
+
+                        <!-- Board background -->
+                        <rect x="20" y="20" width="460" height="460" rx="10" fill="url(#woodPattern)" filter="url(#dropShadow)"/>
+                        
+                        <!-- Decorative border with gradient -->
+                        <rect x="20" y="20" width="460" height="460" rx="10" fill="none" stroke="#8B4513" stroke-width="4"/>
+                        <rect x="28" y="28" width="444" height="444" rx="8" fill="none" stroke="url(#goldShine)" stroke-width="2" opacity="0.5"/>
+
+                        <!-- Rangoli corner decorations -->
+                        <g class="rangoli-corners" fill="none" stroke="#8B4513" stroke-width="1.5" opacity="0.4">
+                            <path d="M35 35 Q50 50 35 65 Q50 50 65 35 Q50 50 35 35" />
+                            <path d="M465 35 Q450 50 465 65 Q450 50 435 35 Q450 50 465 35" />
+                            <path d="M35 465 Q50 450 35 435 Q50 450 65 465 Q50 450 35 465" />
+                            <path d="M465 465 Q450 450 465 435 Q450 450 435 465 Q450 450 465 465" />
+                        </g>
+
+                        <!-- Board lines -->
+                        <g class="board-lines" stroke="#5D3A1A" stroke-width="3" stroke-linecap="round">
+                            <line x1="70" y1="70" x2="430" y2="70"/>
+                            <line x1="430" y1="70" x2="430" y2="430"/>
+                            <line x1="430" y1="430" x2="70" y2="430"/>
+                            <line x1="70" y1="430" x2="70" y2="70"/>
+                            <line x1="130" y1="130" x2="370" y2="130"/>
+                            <line x1="370" y1="130" x2="370" y2="370"/>
+                            <line x1="370" y1="370" x2="130" y2="370"/>
+                            <line x1="130" y1="370" x2="130" y2="130"/>
+                            <line x1="190" y1="190" x2="310" y2="190"/>
+                            <line x1="310" y1="190" x2="310" y2="310"/>
+                            <line x1="310" y1="310" x2="190" y2="310"/>
+                            <line x1="190" y1="310" x2="190" y2="190"/>
+                            <line x1="250" y1="70" x2="250" y2="190"/>
+                            <line x1="430" y1="250" x2="310" y2="250"/>
+                            <line x1="250" y1="430" x2="250" y2="310"/>
+                            <line x1="70" y1="250" x2="190" y2="250"/>
+                        </g>
+
+                        <!-- Mill highlight lines -->
+                        <g class="mill-highlights" id="mill-highlights"></g>
+
+                        <!-- Position spots -->
+                        <g class="positions" id="positions"></g>
+
+                        <!-- Pieces layer -->
+                        <g class="pieces" id="pieces"></g>
+                        
+                        <!-- Animation layer -->
+                        <g class="animation-layer" id="animation-layer"></g>
+                    </svg>
+                </div>
+
+                <!-- Game status -->
+                <div class="game-status" id="game-status">
+                    <span class="status-icon">🎮</span>
+                    <span class="status-text">Player 1: Place your piece</span>
+                </div>
+                
+                <!-- Phase indicator -->
+                <div class="phase-indicator">
+                    <div class="phase-step active" data-phase="placing">
+                        <div class="phase-dot"></div>
+                        <span>Placing</span>
+                    </div>
+                    <div class="phase-connector"></div>
+                    <div class="phase-step" data-phase="moving">
+                        <div class="phase-dot"></div>
+                        <span>Moving</span>
+                    </div>
+                    <div class="phase-connector"></div>
+                    <div class="phase-step" data-phase="flying">
+                        <div class="phase-dot"></div>
+                        <span>Flying</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Player 2 Panel -->
+            <div class="player-panel player2-panel">
+                <div class="player-info">
+                    <div class="player-avatar player2-avatar">
+                        <div class="avatar-inner">
+                            <span class="avatar-icon" id="p2-avatar-icon">👤</span>
+                        </div>
+                        <div class="avatar-ring"></div>
+                    </div>
+                    <h3 id="p2-name">Player 2</h3>
+                    <div class="player-color green"></div>
+                </div>
+                <div class="player-stats">
+                    <div class="stat">
+                        <div class="stat-icon">📦</div>
+                        <span class="stat-label">To Place</span>
+                        <span class="stat-value" id="p2-to-place">9</span>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-icon">🎯</div>
+                        <span class="stat-label">On Board</span>
+                        <span class="stat-value" id="p2-on-board">0</span>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-icon">⚔️</div>
+                        <span class="stat-label">Captured</span>
+                        <span class="stat-value" id="p2-captured">0</span>
+                    </div>
+                </div>
+                <div class="turn-indicator inactive" id="p2-turn">
+                    <span class="turn-text">Your Turn</span>
+                    <div class="turn-glow"></div>
+                </div>
+                <div class="captured-pieces" id="p2-captured-pieces"></div>
+            </div>
+        </div>
+
+        <!-- Move History Panel -->
+        <div class="move-history-panel" id="move-history-panel">
+            <div class="history-header">
+                <h4>📜 Move History</h4>
+                <button class="toggle-history" id="toggle-history">▼</button>
+            </div>
+            <div class="history-content" id="history-content">
+                <div class="history-list" id="history-list"></div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="game-controls">
+            <button class="btn btn-primary" id="new-game-btn">
+                <span class="btn-icon">🔄</span>
+                New Game
+            </button>
+            <button class="btn btn-secondary" id="rules-btn">
+                <span class="btn-icon">📜</span>
+                Rules
+            </button>
+            <button class="btn btn-secondary" id="hint-btn">
+                <span class="btn-icon">💡</span>
+                Hint
+            </button>
+            <button class="btn btn-secondary" id="undo-btn" disabled>
+                <span class="btn-icon">↩️</span>
+                Undo
+            </button>
+        </div>
+
+        <!-- Rules Modal -->
+        <div class="modal" id="rules-modal">
+            <div class="modal-content">
+                <button class="modal-close" id="modal-close">&times;</button>
+                <h2>📜 How to Play Navakankari</h2>
+                
+                <div class="rules-section">
+                    <h3>🎯 Objective</h3>
+                    <p>Reduce your opponent to 2 pieces or block all their moves.</p>
+                </div>
+
+                <div class="rules-section">
+                    <h3>🎲 Game Phases</h3>
+                    
+                    <div class="phase">
+                        <h4>Phase 1: Placing</h4>
+                        <p>Players take turns placing one piece at a time on any empty intersection. Each player has 9 pieces.</p>
+                    </div>
+                    
+                    <div class="phase">
+                        <h4>Phase 2: Moving</h4>
+                        <p>After all pieces are placed, move one piece to an adjacent empty intersection along a line.</p>
+                    </div>
+                    
+                    <div class="phase">
+                        <h4>Phase 3: Flying</h4>
+                        <p>When you have only 3 pieces left, you can "fly" - move to any empty intersection!</p>
+                    </div>
+                </div>
+
+                <div class="rules-section">
+                    <h3>⭐ Forming a Mill</h3>
+                    <p>A <strong>mill</strong> is three pieces of the same color in a straight line. Form a mill to remove one opponent's piece (except pieces in a mill, unless no other pieces are available).</p>
+                </div>
+
+                <div class="rules-section">
+                    <h3>🏆 Winning</h3>
+                    <ul>
+                        <li>Reduce your opponent to 2 pieces</li>
+                        <li>Block all opponent's pieces so they cannot move</li>
+                    </ul>
+                </div>
+
+                <button class="btn btn-primary" id="close-rules">Got it!</button>
+            </div>
+        </div>
+
+        <!-- Win Modal -->
+        <div class="modal" id="win-modal">
+            <div class="modal-content win-content">
+                <div class="win-celebration">🎉</div>
+                <h2 id="winner-text">Player 1 Wins!</h2>
+                <p id="win-reason">Opponent has fewer than 3 pieces</p>
+                <div class="win-stats">
+                    <div class="win-stat">
+                        <span class="win-stat-label">Total Moves</span>
+                        <span class="win-stat-value" id="win-moves">0</span>
+                    </div>
+                    <div class="win-stat">
+                        <span class="win-stat-label">Mills Formed</span>
+                        <span class="win-stat-value" id="win-mills">0</span>
+                    </div>
+                </div>
+                <div class="win-actions">
+                    <button class="btn btn-primary" id="play-again-btn">Play Again</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="sounds.js"></script>
+    <script src="particles.js"></script>
+    <script src="ai.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>

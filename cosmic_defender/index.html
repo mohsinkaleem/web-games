@@ -11,29 +11,63 @@
     <div class="game-container">
         <div class="header">
             <h1>🚀 COSMIC DEFENDER 🚀</h1>
-            <p class="subtitle">Defend the Galaxy from Alien Invaders!</p>
+            <p class="subtitle">Enhanced Edition — Defend the Galaxy!</p>
         </div>
         <div id="game"></div>
         <div class="instructions">
-            <h3>Controls:</h3>
-            <ul>
-                <li><strong>Mouse</strong> - Move spaceship</li>
-                <li><strong>Click / Space</strong> - Shoot</li>
-                <li><strong>P</strong> - Pause</li>
-            </ul>
+            <div class="controls-grid">
+                <div class="control-section">
+                    <h3>Movement:</h3>
+                    <ul>
+                        <li><strong>WASD / Arrow Keys</strong> - Move ship (all directions)</li>
+                        <li><strong>↑ W</strong> - Move up &nbsp; <strong>↓ S</strong> - Move down</li>
+                        <li><strong>← A</strong> - Move left &nbsp; <strong>→ D</strong> - Move right</li>
+                    </ul>
+                </div>
+                <div class="control-section">
+                    <h3>Combat:</h3>
+                    <ul>
+                        <li><strong>Space (hold)</strong> - Auto-fire</li>
+                        <li><strong>Click</strong> - Single shot</li>
+                        <li><strong>B</strong> - Bomb (screen clear)</li>
+                        <li><strong>P</strong> - Pause</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="weapons">
+                <h3>🔫 Weapons (switch with 1-5):</h3>
+                <div class="weapon-grid">
+                    <div class="weapon-item">🔫 <strong>[1] Blaster</strong> — Rapid-fire standard</div>
+                    <div class="weapon-item">🌟 <strong>[2] Spread Shot</strong> — 5-way fan <span class="unlock">500pts</span></div>
+                    <div class="weapon-item">🚀 <strong>[3] Homing Missiles</strong> — Auto-tracking <span class="unlock">1500pts</span></div>
+                    <div class="weapon-item">💠 <strong>[4] Plasma Cannon</strong> — AoE blast <span class="unlock">3000pts</span></div>
+                    <div class="weapon-item">⚡ <strong>[5] Chain Lightning</strong> — Arcs between foes <span class="unlock">5000pts</span></div>
+                </div>
+            </div>
             <div class="power-ups">
                 <h3>Power-ups:</h3>
-                <div class="power-up-item">🛡️ Shield - Temporary invincibility</div>
-                <div class="power-up-item">⚡ Rapid Fire - Faster shooting</div>
-                <div class="power-up-item">✨ Multi-Shot - Triple lasers</div>
-                <div class="power-up-item">🔫 Laser Beam - Devastating power</div>
+                <div class="power-up-item">🛡️ Shield — Invincibility</div>
+                <div class="power-up-item">⚡ Rapid Fire — 2× fire rate</div>
+                <div class="power-up-item">✨ Multi-Shot — Triple lasers</div>
+                <div class="power-up-item">🔫 Laser Beam — Devastating power</div>
+                <div class="power-up-item">💣 Bomb — Extra screen clear</div>
+                <div class="power-up-item">💚 Health — Restore 25 HP</div>
             </div>
             <div class="features">
-                <h3>Features:</h3>
-                <div class="feature-item">🎯 Combo System - Chain kills for bonus points</div>
-                <div class="feature-item">👾 Multiple Enemy Types - Different behaviors & health</div>
-                <div class="feature-item">🐲 Epic Boss Battles - Every 20 kills</div>
-                <div class="feature-item">🌊 Wave System - Progressive difficulty</div>
+                <h3>Combo System:</h3>
+                <div class="feature-item">🟡 3× TRIPLE! — +10% dmg, 2× score</div>
+                <div class="feature-item">🟠 5× PENTA KILL! — +20% dmg, 3× score</div>
+                <div class="feature-item">🔴 10× UNSTOPPABLE! — +30% dmg, 5× score</div>
+                <div class="feature-item">🟣 15× COSMIC FURY! — +50% dmg, auto-shield</div>
+                <div class="feature-item">🔵 25× GODLIKE! — +75% dmg, 12× score, +bomb</div>
+            </div>
+            <div class="features">
+                <h3>Enemy Types:</h3>
+                <div class="feature-item">👾 Standard & Fast — Basic troops</div>
+                <div class="feature-item">🛡️ Tank — Heavy armor (3 HP)</div>
+                <div class="feature-item">👻 Stealth — Fades in/out</div>
+                <div class="feature-item">💣 Bomber — Cluster shots</div>
+                <div class="feature-item">🐲 Boss — Every 20 kills, multi-phase</div>
             </div>
         </div>
     </div>

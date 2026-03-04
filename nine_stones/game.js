@@ -468,11 +468,13 @@ class NavakankariGame {
                 this.updateStatus("Cannot remove a piece that's in a mill!", '❌');
                 
                 // Shake animation
-                gsap.to('.game-status', {
-                    x: [-5, 5, -5, 5, 0],
-                    duration: 0.3,
-                    ease: 'power2.out'
-                });
+                if (typeof gsap !== 'undefined') {
+                    gsap.to('.game-status', {
+                        x: [-5, 5, -5, 5, 0],
+                        duration: 0.3,
+                        ease: 'power2.out'
+                    });
+                }
                 return;
             }
         }
@@ -507,6 +509,7 @@ class NavakankariGame {
 
         if (this.piecesToPlace[1] === 0 && this.piecesToPlace[2] === 0) {
             this.phase = 'moving';
+            this.updatePhaseIndicator();
         }
 
         this.switchPlayer();
@@ -698,7 +701,8 @@ class NavakankariGame {
         try {
             // Keep making moves while it's AI turn (could be a placement then a removal)
             while (this.currentPlayer === 2 && !this.gameOver) {
-                this.updateStatus('AI is thinking...', '🤔');
+                const levelName = this.aiDifficulty.charAt(0).toUpperCase() + this.aiDifficulty.slice(1);
+                this.updateStatus(`AI (${levelName}) is thinking...`, '🤔');
                 const move = await this.ai.getBestMove();
                 
                 if (move) {

@@ -51,8 +51,13 @@ body::before {
     width: 100%;
 }
 
+#game canvas {
+    max-width: 100%;
+    height: auto !important;
+}
+
 .header {
-    margin-bottom: 30px;
+    margin-bottom: 15px;
     animation: slideDown 1s ease-out;
 }
 

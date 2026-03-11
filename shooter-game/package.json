@@ -1,0 +1,22 @@
+{
+  "name": "arena-shooter",
+  "version": "1.0.0",
+  "description": "Browser-based 3D FPS arena shooter",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node test/game-test.mjs --headless",
+    "test:visible": "node test/game-test.mjs"
+  },
+  "dependencies": {
+    "cannon-es": "^0.20.0",
+    "howler": "^2.2.4",
+    "three": "^0.160.0"
+  },
+  "devDependencies": {
+    "playwright": "^1.58.2",
+    "vite": "^5.0.0"
+  }
+}

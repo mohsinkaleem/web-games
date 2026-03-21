@@ -116,8 +116,8 @@ export function TextDisplay({
                       <span className="absolute left-0 top-0 bottom-0 w-0.5 bg-indigo-400 rounded-full animate-pulse shadow-lg shadow-indigo-400/60" />
                     )}
                     
-                    {/* Show what was typed incorrectly - only for the most recent error, fades after 300ms */}
-                    {index === recentError && typedInfo && !typedInfo.correct && (
+                    {/* Show what was typed incorrectly*/}
+                    {typedInfo && !typedInfo.correct && (
                       <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-xs text-red-400 bg-red-900/80 px-1.5 py-0.5 rounded font-bold whitespace-nowrap z-10">
                         {isSpace && typedInfo.char !== ' ' ? typedInfo.char : null}
                         {!isSpace && typedInfo.char === ' ' ? '␣' : null}

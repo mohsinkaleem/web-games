@@ -1,6 +1,6 @@
 .playwright-cli
 node_modules
-dist
+# dist removed to allow hosting built games on GitHub Pages
 coverage
 *.log
 *.tsbuildinfo

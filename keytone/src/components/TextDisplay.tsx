@@ -42,10 +42,11 @@ export function TextDisplay({
   }, [typedChars]);
 
   return (
-    <div
-      ref={containerRef}
-      className="relative p-5 md:p-6 bg-gray-900/90 backdrop-blur-md rounded-3xl border border-gray-700/50 overflow-y-auto no-scrollbar shadow-2xl shadow-indigo-500/10 min-h-48 max-h-72"
-    >
+    <div className="relative bg-gray-900/90 backdrop-blur-md rounded-3xl border border-gray-700/50 shadow-2xl shadow-indigo-500/10">
+      <div
+        ref={containerRef}
+        className="p-5 md:p-6 overflow-y-auto no-scrollbar min-h-48 max-h-72"
+      >
       {/* Text container - responsive sizing with word wrapping */}
       <div className="font-mono text-xl md:text-2xl leading-relaxed tracking-wide select-none text-center">
         {text.split(/(\s+)/).map((part, partIndex, parts) => {
@@ -130,9 +131,10 @@ export function TextDisplay({
           );
         })}
       </div>
+      </div>
 
-      {/* Progress bar - thicker */}
-      <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gray-800/50">
+      {/* Progress bar - pinned to visual bottom, outside scroll area */}
+      <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gray-800/50 rounded-b-3xl overflow-hidden">
         <div
           className="h-full bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 transition-all duration-200 ease-out shadow-lg shadow-indigo-500/30"
           style={{ width: `${(currentIndex / text.length) * 100}%` }}

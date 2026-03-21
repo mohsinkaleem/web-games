@@ -96,7 +96,7 @@ export function TypingPractice() {
     userData.settings.keyboardClickSound ?? true
   );
   const [timedMode, setTimedMode] = useState<number | null>(null);
-  const [chordProgression, setChordProgression] = useState<'pop' | 'classic' | 'jazz' | 'blues' | 'ambient'>(
+  const [chordProgression] = useState<'pop' | 'classic' | 'jazz' | 'blues' | 'ambient'>(
     (userData.settings.chordProgression as 'pop' | 'classic' | 'jazz' | 'blues' | 'ambient') || 'pop'
   );
   const [cursorStyle, setCursorStyle] = useState<'line' | 'underline'>(
@@ -538,8 +538,6 @@ export function TypingPractice() {
           keyboardClickSound={keyboardClickSound}
           onKeyboardClickSoundChange={setKeyboardClickSound}
           timedMode={timedMode}
-          chordProgression={chordProgression}
-          onChordProgressionChange={setChordProgression}
           cursorStyle={cursorStyle}
           onCursorStyleChange={setCursorStyle}
           onTimedModeChange={setTimedMode}
@@ -683,8 +681,8 @@ export function TypingPractice() {
       )}
 
       {/* Main typing area */}
-      <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8">
-        <div className="w-full max-w-5xl space-y-6">
+      <div className="flex-1 flex flex-col items-center justify-center p-3 sm:p-5 overflow-hidden min-h-0">
+        <div className="w-full max-w-5xl space-y-3">
           {/* Text info */}
           <div className="flex items-center justify-between">
             <div>
@@ -723,7 +721,7 @@ export function TypingPractice() {
 
         {/* Virtual Keyboard */}
         {showKeyboard && (
-          <div className="w-full max-w-4xl mt-8">
+          <div className="w-full max-w-4xl mt-3">
             <VirtualKeyboard
               currentChar={selectedText.text[currentIndex]}
               lastTypedChar={typedChars[typedChars.length - 1]?.char}
@@ -736,16 +734,13 @@ export function TypingPractice() {
       </div>
 
       {/* Footer */}
-      <footer className="px-6 py-2 border-t border-gray-800 flex items-center justify-center gap-3 text-[11px] text-gray-600 flex-wrap">
-        <span><kbd className="px-1 py-0.5 bg-gray-800 rounded text-[10px]">Tab</kbd> next</span>
-        <span><kbd className="px-1 py-0.5 bg-gray-800 rounded text-[10px]">Esc</kbd> restart</span>
-        <span className="text-gray-700">|</span>
-        <span><kbd className="px-1 py-0.5 bg-gray-800 rounded text-[10px]">Alt+R</kbd> restart</span>
-        <span><kbd className="px-1 py-0.5 bg-gray-800 rounded text-[10px]">Alt+N</kbd> next</span>
-        <span><kbd className="px-1 py-0.5 bg-gray-800 rounded text-[10px]">Alt+S</kbd> settings</span>
-        <span><kbd className="px-1 py-0.5 bg-gray-800 rounded text-[10px]">Alt+K</kbd> keyboard</span>
-        <span><kbd className="px-1 py-0.5 bg-gray-800 rounded text-[10px]">Alt+M</kbd> mute</span>
-        <span><kbd className="px-1 py-0.5 bg-gray-800 rounded text-[10px]">Alt+C</kbd> cursor</span>
+      <footer className="px-6 py-1 border-t border-gray-800 flex items-center justify-center gap-3 text-[10px] text-gray-600">
+        <span><kbd className="px-1 bg-gray-800 rounded">Tab</kbd> next</span>
+        <span><kbd className="px-1 bg-gray-800 rounded">Esc</kbd> restart</span>
+        <span className="text-gray-700">·</span>
+        <span><kbd className="px-1 bg-gray-800 rounded">Alt+S</kbd> settings</span>
+        <span><kbd className="px-1 bg-gray-800 rounded">Alt+K</kbd> keyboard</span>
+        <span><kbd className="px-1 bg-gray-800 rounded">Alt+M</kbd> mute</span>
       </footer>
 
       {/* Stats Panel Modal */}

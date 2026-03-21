@@ -9,7 +9,7 @@ function App() {
     <ErrorBoundary>
       <AudioProvider>
         <UniverseProvider>
-          <div className="min-h-screen flex flex-col">
+          <div className="h-screen overflow-hidden flex flex-col">
             <TypingPractice />
           </div>
         </UniverseProvider>

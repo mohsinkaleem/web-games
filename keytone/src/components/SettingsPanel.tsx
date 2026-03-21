@@ -1,7 +1,6 @@
 import { SOUND_THEMES, TYPEWRITER_VARIANTS } from '../audio';
 import { useAudio } from '../contexts/useAudio';
 import type { UserSettings } from '../utils/storage';
-import type { ProgressionName } from '../utils/noteUtils';
 import { audioEngine } from '../audio';
 import { midiToFrequency } from '../utils/noteUtils';
 
@@ -16,8 +15,6 @@ interface SettingsPanelProps {
   onKeyboardClickSoundChange: (enabled: boolean) => void;
   timedMode: number | null;
   onTimedModeChange: (mode: number | null) => void;
-  chordProgression: ProgressionName;
-  onChordProgressionChange: (progression: ProgressionName) => void;
   cursorStyle: 'line' | 'underline';
   onCursorStyleChange: (style: 'line' | 'underline') => void;
   onSettingsChange: <K extends keyof UserSettings>(key: K, value: UserSettings[K]) => void;
@@ -31,14 +28,6 @@ const TIMED_OPTIONS: { value: number | null; label: string }[] = [
   { value: 120, label: '2 min' },
 ];
 
-const CHORD_PROGRESSIONS: { value: ProgressionName; label: string; icon: string }[] = [
-  { value: 'pop', label: 'Pop', icon: '🎵' },
-  { value: 'classic', label: 'Classic', icon: '🎼' },
-  { value: 'jazz', label: 'Jazz', icon: '🎷' },
-  { value: 'blues', label: 'Blues', icon: '🎸' },
-  { value: 'ambient', label: 'Ambient', icon: '🌙' },
-];
-
 export function SettingsPanel({
   enableBackspace,
   onEnableBackspaceChange,
@@ -50,8 +39,6 @@ export function SettingsPanel({
   onKeyboardClickSoundChange,
   timedMode,
   onTimedModeChange,
-  chordProgression,
-  onChordProgressionChange,
   cursorStyle,
   onCursorStyleChange,
   onSettingsChange,
@@ -214,31 +201,6 @@ export function SettingsPanel({
                 }`}
               >
                 {opt.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Chord Progression */}
-        <div className="space-y-1.5">
-          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1">Harmony</span>
-          <div className="flex bg-gray-800/50 rounded-lg p-1 w-fit">
-            {CHORD_PROGRESSIONS.map((prog) => (
-              <button
-                key={prog.value}
-                onClick={() => {
-                  onChordProgressionChange(prog.value);
-                  onSettingsChange('chordProgression', prog.value);
-                }}
-                title={prog.label}
-                className={`px-3 py-1.5 flex items-center gap-1.5 rounded-md text-sm transition-all ${
-                  chordProgression === prog.value
-                    ? 'bg-indigo-600 text-white shadow-sm'
-                    : 'text-gray-400 hover:text-white hover:bg-gray-800'
-                }`}
-              >
-                <span className="text-base">{prog.icon}</span>
-                <span className="hidden xl:inline font-medium">{prog.label}</span>
               </button>
             ))}
           </div>

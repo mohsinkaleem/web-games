@@ -13,16 +13,21 @@ export function TextDisplay({
   typedChars,
   cursorStyle = 'line',
 }: TextDisplayProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const currentCharRef = useRef<HTMLSpanElement>(null);
   const [recentError, setRecentError] = useState<number | null>(null);
 
-  // Auto-scroll to keep current character in view
+  // Scroll container to keep current character visible (no scrollbar jank)
   useEffect(() => {
-    currentCharRef.current?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'center',
-      inline: 'center',
-    });
+    if (!currentCharRef.current || !containerRef.current) return;
+    const container = containerRef.current;
+    const char = currentCharRef.current;
+    const charTop = char.offsetTop;
+    const charHeight = char.offsetHeight;
+    const containerHeight = container.clientHeight;
+    // Keep current char in the upper-third of the visible area
+    const targetScrollTop = charTop - containerHeight / 3 + charHeight / 2;
+    container.scrollTo({ top: Math.max(0, targetScrollTop), behavior: 'smooth' });
   }, [currentIndex]);
 
   // Track recent errors for per-character underline animation
@@ -37,11 +42,12 @@ export function TextDisplay({
   }, [typedChars]);
 
   return (
-    <div 
-      className="relative p-8 md:p-10 bg-gray-900/90 backdrop-blur-md rounded-3xl border border-gray-700/50 overflow-hidden shadow-2xl shadow-indigo-500/10 min-h-56 max-h-[28rem] overflow-y-auto"
+    <div
+      ref={containerRef}
+      className="relative p-5 md:p-6 bg-gray-900/90 backdrop-blur-md rounded-3xl border border-gray-700/50 overflow-y-auto no-scrollbar shadow-2xl shadow-indigo-500/10 min-h-48 max-h-72"
     >
       {/* Text container - responsive sizing with word wrapping */}
-      <div className="font-mono text-2xl md:text-3xl leading-loose tracking-wide select-none text-center">
+      <div className="font-mono text-xl md:text-2xl leading-relaxed tracking-wide select-none text-center">
         {text.split(/(\s+)/).map((part, partIndex, parts) => {
           // Calculate the starting global index for this part
           const startIndex = parts.slice(0, partIndex).join('').length;

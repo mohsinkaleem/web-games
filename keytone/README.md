@@ -2,13 +2,6 @@
 
 A typing practice app that turns your keystrokes into music. Every correct character plays a harmonious note, while errors create discordant sounds - making typing practice both fun and immersive.
 
-
-This is the release for actual codebase
-https://github.com/mohsinkaleem/keytone.git
-
-
-
-
 ## Features
 
 ### Typing Practice
@@ -48,3 +41,19 @@ https://github.com/mohsinkaleem/keytone.git
 ### Keyboard Shortcuts
 - `Tab` - Get a new random text
 - `Esc` - Restart current text
+
+## Quick Start
+
+```bash
+npm install
+npm run dev
+```
+
+## Tech Stack
+- React + TypeScript
+- Vite
+- Tailwind CSS
+- Web Audio API
+
+### !important
+Use playwright-cli to test the app at the end if needed

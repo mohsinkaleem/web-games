@@ -60,6 +60,7 @@ function cleanQuranText(text: string): string {
     .replace(/([a-z])([A-Z])/g, '$1 $2')       // Fix "Godcompassed" → "God compassed"
     .replace(/([.!?;:,])([A-Z])/g, '$1 $2')     // Fix "Potent.If" → "Potent. If"
     .replace(/([a-z])(their|your|our|his|her)/gi, '$1 $2') // Fix merged pronouns
+    .replace(/([.!?;])\d{1,3}\b/g, '$1')        // Strip verse numbers appended to punctuation e.g. "fruition.6"
     .replace(/\s{2,}/g, ' ')
     .trim();
 }

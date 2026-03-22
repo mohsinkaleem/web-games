@@ -681,7 +681,7 @@ export function TypingPractice() {
       )}
 
       {/* Main typing area */}
-      <div className="flex-1 flex flex-col items-center justify-center p-3 sm:p-5 overflow-hidden min-h-0">
+      <div className="flex-1 flex flex-col items-center p-3 sm:p-5 overflow-hidden min-h-0">
         <div className="w-full max-w-5xl space-y-3">
           {/* Text info */}
           <div className="flex items-center justify-between">

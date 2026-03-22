@@ -76,7 +76,7 @@ export function chunkText(text: string, options: ChunkOptions = {}): string[] {
     }
   }
 
-  return chunks.filter(c => c.length > 0);
+  return chunks.map(c => sanitizeForKeyboard(c)).filter(c => c.length > 0);
 }
 
 /** Split a long block at sentence boundaries */
@@ -122,18 +122,56 @@ function splitByWords(text: string, maxLength: number): string[] {
 }
 
 /**
+ * Sanitise text so every character is typeable on a standard US keyboard.
+ *
+ * 1. Unicode whitespace → regular space
+ * 2. Smart quotes / dashes / ligatures → ASCII equivalents
+ * 3. Strip anything outside printable ASCII (0x20-0x7E) + newline
+ * 4. Collapse runs of spaces; trim
+ */
+export function sanitizeForKeyboard(text: string): string {
+  return (
+    text
+      // Unicode whitespace → regular space
+      .replace(/[\u00A0\u2000-\u200A\u202F\u205F\u3000]/g, ' ')
+      // Zero-width chars (joiners, non-joiners, marks, BOM)
+      .replace(/[\u200B-\u200F\u061C\u2060\uFEFF]/g, '')
+      // Smart single quotes / apostrophes → '
+      .replace(/[\u2018\u2019\u201A\u201B\u2039\u203A]/g, "'")
+      // Smart double quotes → "
+      .replace(/[\u201C\u201D\u201E\u201F\u00AB\u00BB]/g, '"')
+      // Em-dash / en-dash → hyphen
+      .replace(/[\u2013\u2014]/g, '-')
+      // Ellipsis → three dots
+      .replace(/\u2026/g, '...')
+      // Common ligatures
+      .replace(/\uFB01/g, 'fi')
+      .replace(/\uFB02/g, 'fl')
+      // Strip any remaining non-ASCII-printable (keep space 0x20, printable 0x21-0x7E, newline)
+      .replace(/[^\x20-\x7E\n]/g, '')
+      // Collapse multiple spaces
+      .replace(/ {2,}/g, ' ')
+      // Clean up spaces around newlines
+      .replace(/ *\n */g, '\n')
+      .trim()
+  );
+}
+
+/**
  * Parse/normalise a plain-text file.
  */
 export function parseTextFile(content: string): string {
-  return content
-    .replace(/\r\n/g, '\n')
-    .replace(/\r/g, '\n')
-    .replace(/\t/g, '    ')
-    .replace(/[ \t]+/g, ' ')
-    .replace(/\n\s*\n/g, '\n\n')
-    .replace(/^ +/gm, '')
-    .replace(/ +$/gm, '')
-    .trim();
+  return sanitizeForKeyboard(
+    content
+      .replace(/\r\n/g, '\n')
+      .replace(/\r/g, '\n')
+      .replace(/\t/g, '    ')
+      .replace(/[ \t]+/g, ' ')
+      .replace(/\n\s*\n/g, '\n\n')
+      .replace(/^ +/gm, '')
+      .replace(/ +$/gm, '')
+      .trim()
+  );
 }
 
 /**

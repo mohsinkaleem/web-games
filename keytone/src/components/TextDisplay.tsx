@@ -45,7 +45,7 @@ export function TextDisplay({
     <div className="relative bg-gray-900/90 backdrop-blur-md rounded-3xl border border-gray-700/50 shadow-2xl shadow-indigo-500/10">
       <div
         ref={containerRef}
-        className="p-5 md:p-6 overflow-y-auto no-scrollbar min-h-48 max-h-72"
+        className="p-5 md:p-6 overflow-y-auto no-scrollbar min-h-48 max-h-80"
       >
       {/* Text container - responsive sizing with word wrapping */}
       <div className="font-mono text-xl md:text-2xl leading-relaxed tracking-wide select-none text-center">

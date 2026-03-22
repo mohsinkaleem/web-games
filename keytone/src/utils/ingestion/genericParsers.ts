@@ -8,7 +8,7 @@
  */
 
 import type { Excerpt } from '../../types/universe';
-import { estimateDifficulty, chunkText } from './chunking';
+import { estimateDifficulty, chunkText, sanitizeForKeyboard } from './chunking';
 
 // ── Line-by-line parser ──────────────────────────────────────
 
@@ -30,17 +30,19 @@ export function parseLineByLine(
     .map(l => l.trim())
     .filter(l => l.length >= minLength)
     .flatMap((line, i) => {
-      if (line.length <= maxLength) {
+      const clean = sanitizeForKeyboard(line);
+      if (clean.length < minLength) return [];
+      if (clean.length <= maxLength) {
         return [{
           universeId: '',
-          text: line,
-          title: `Line ${i + 1}: ${line.slice(0, 40).trim()}`,
-          difficulty: estimateDifficulty(line),
+          text: clean,
+          title: `Line ${i + 1}: ${clean.slice(0, 40).trim()}`,
+          difficulty: estimateDifficulty(clean),
           order: i,
         }];
       }
       // Chunk long lines
-      return chunkText(line, { maxLength, minLength }).map((chunk, j) => ({
+      return chunkText(clean, { maxLength, minLength }).map((chunk, j) => ({
         universeId: '',
         text: chunk,
         title: `Line ${i + 1}.${j + 1}: ${chunk.slice(0, 40).trim()}`,
@@ -88,7 +90,7 @@ export function parseJsonText(
   let order = 0;
 
   for (const item of items) {
-    const text = getNestedValue(item, textField)?.trim();
+    const text = sanitizeForKeyboard(getNestedValue(item, textField)?.trim() ?? '');
     if (!text || text.length < 10) continue;
 
     const title = (titleField ? getNestedValue(item, titleField) : undefined)

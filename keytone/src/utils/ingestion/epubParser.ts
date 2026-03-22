@@ -1,4 +1,5 @@
 import JSZip from 'jszip';
+import { sanitizeForKeyboard } from './chunking';
 
 /**
  * Extract plain text content from an EPUB file.
@@ -106,11 +107,13 @@ export async function parseEpubChapters(file: File): Promise<EpubChapter[]> {
     }
 
     // Clean up
-    sectionText = sectionText
-      .replace(/\r\n/g, '\n')
-      .replace(/\n{3,}/g, '\n\n')
-      .replace(/[ \t]+/g, ' ')
-      .trim();
+    sectionText = sanitizeForKeyboard(
+      sectionText
+        .replace(/\r\n/g, '\n')
+        .replace(/\n{3,}/g, '\n\n')
+        .replace(/[ \t]+/g, ' ')
+        .trim()
+    );
 
     if (sectionText.length < 20) continue; // Skip near-empty chapters
 

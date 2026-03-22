@@ -36,10 +36,11 @@ const SHIFT_CHARS: Record<string, string> = {
 // Simplified: just left/right hand
 type Hand = 'left' | 'right' | 'thumb';
 
-const KEY_HAND: Record<string, Hand> = {};
-['`','1','2','3','4','5','Q','W','E','R','T','A','S','D','F','G','Z','X','C','V','B','Tab','Caps','Shift-L'].forEach(k => { KEY_HAND[k] = 'left'; });
-['6','7','8','9','0','-','=','Y','U','I','O','P','[',']','\\','H','J','K','L',';',"'",'N','M',',','.','/','Backspace','Enter','Shift-R'].forEach(k => { KEY_HAND[k] = 'right'; });
-KEY_HAND['Space'] = 'thumb';
+const KEY_HAND: Record<string, Hand> = Object.fromEntries([
+  ...['`','1','2','3','4','5','Q','W','E','R','T','A','S','D','F','G','Z','X','C','V','B','Tab','Caps','Shift-L'].map(k => [k, 'left' as Hand]),
+  ...['6','7','8','9','0','-','=','Y','U','I','O','P','[',']','\\','H','J','K','L',';',"'",'N','M',',','.','/','Backspace','Enter','Shift-R'].map(k => [k, 'right' as Hand]),
+  ['Space', 'thumb' as Hand],
+]);
 
 const HAND_RING: Record<Hand, string> = {
   left: 'ring-amber-400/50',
@@ -138,7 +139,7 @@ export function VirtualKeyboard({
   };
 
   return (
-    <div className="w-full px-2 py-3 bg-gray-900/50 backdrop-blur-sm rounded-xl border border-gray-800/50 relative">
+    <div className="w-fit mx-auto px-3 py-3 bg-gray-900/50 backdrop-blur-sm rounded-xl border border-gray-800/50 relative">
       {showFingerGuides && suggestionText && (
         <div className="mb-2 px-2">
           <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md border border-indigo-400/25 bg-indigo-500/10 text-indigo-100 text-[11px]">

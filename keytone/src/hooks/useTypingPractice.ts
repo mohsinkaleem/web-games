@@ -65,6 +65,19 @@ const SCORE_CONFIG = {
   },
 };
 
+/** Calculate completion bonus from accuracy + WPM thresholds */
+function getCompletionBonus(accuracy: number, wpm: number): number {
+  let bonus = 0;
+  if (accuracy >= 95) bonus += SCORE_CONFIG.accuracyBonus[95];
+  else if (accuracy >= 90) bonus += SCORE_CONFIG.accuracyBonus[90];
+  else if (accuracy >= 85) bonus += SCORE_CONFIG.accuracyBonus[85];
+
+  if (wpm >= 80) bonus += SCORE_CONFIG.wpmBonus[80];
+  else if (wpm >= 60) bonus += SCORE_CONFIG.wpmBonus[60];
+  else if (wpm >= 40) bonus += SCORE_CONFIG.wpmBonus[40];
+  return bonus;
+}
+
 // Discordant frequencies for errors
 const ERROR_FREQUENCIES = [233.08, 246.94]; // Bb3 and B3 - dissonant
 
@@ -308,13 +321,7 @@ export function useTypingPractice({
       let finalScore = newScore;
 
       if (isComplete) {
-        if (accuracy >= 95) finalScore += SCORE_CONFIG.accuracyBonus[95];
-        else if (accuracy >= 90) finalScore += SCORE_CONFIG.accuracyBonus[90];
-        else if (accuracy >= 85) finalScore += SCORE_CONFIG.accuracyBonus[85];
-
-        if (wpm >= 80) finalScore += SCORE_CONFIG.wpmBonus[80];
-        else if (wpm >= 60) finalScore += SCORE_CONFIG.wpmBonus[60];
-        else if (wpm >= 40) finalScore += SCORE_CONFIG.wpmBonus[40];
+        finalScore += getCompletionBonus(accuracy, wpm);
       }
 
       return {
@@ -393,15 +400,7 @@ export function useTypingPractice({
     if (stats.isComplete) return;
 
     setStats((prev) => {
-      let finalScore = prev.score;
-
-      if (prev.accuracy >= 95) finalScore += SCORE_CONFIG.accuracyBonus[95];
-      else if (prev.accuracy >= 90) finalScore += SCORE_CONFIG.accuracyBonus[90];
-      else if (prev.accuracy >= 85) finalScore += SCORE_CONFIG.accuracyBonus[85];
-
-      if (prev.wpm >= 80) finalScore += SCORE_CONFIG.wpmBonus[80];
-      else if (prev.wpm >= 60) finalScore += SCORE_CONFIG.wpmBonus[60];
-      else if (prev.wpm >= 40) finalScore += SCORE_CONFIG.wpmBonus[40];
+      const finalScore = prev.score + getCompletionBonus(prev.accuracy, prev.wpm);
 
       return {
         ...prev,

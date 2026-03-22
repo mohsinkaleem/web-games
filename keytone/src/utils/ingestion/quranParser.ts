@@ -9,7 +9,7 @@
  */
 
 import type { Excerpt } from '../../types/universe';
-import { chunkText, estimateDifficulty } from './chunking';
+import { chunkText, estimateDifficulty, sanitizeForKeyboard } from './chunking';
 
 export interface QuranParseOptions {
   /** Target excerpt length in characters (default: 400) */
@@ -56,13 +56,15 @@ function surahName(n: number): string {
 
 /** Clean common text artifacts (OCR/formatting issues) */
 function cleanQuranText(text: string): string {
-  return text
-    .replace(/([a-z])([A-Z])/g, '$1 $2')       // Fix "Godcompassed" → "God compassed"
-    .replace(/([.!?;:,])([A-Z])/g, '$1 $2')     // Fix "Potent.If" → "Potent. If"
-    .replace(/([a-z])(their|your|our|his|her)/gi, '$1 $2') // Fix merged pronouns
-    .replace(/([.!?;])\d{1,3}\b/g, '$1')        // Strip verse numbers appended to punctuation e.g. "fruition.6"
-    .replace(/\s{2,}/g, ' ')
-    .trim();
+  return sanitizeForKeyboard(
+    text
+      .replace(/([a-z])([A-Z])/g, '$1 $2')       // Fix "Godcompassed" → "God compassed"
+      .replace(/([.!?;:,])([A-Za-z])/g, '$1 $2')  // Fix "Potent.If" → "Potent. If"
+      .replace(/([a-z])(their|your|our|his|her|the|and|but|for|not|with|from|this|that|they|them|have|has|had|was|were|are|shall|will|who|whom|which)/gi, '$1 $2') // Fix merged common words
+      .replace(/([.!?;])\d{1,3}\b/g, '$1')        // Strip verse numbers appended to punctuation e.g. "fruition.6"
+      .replace(/\s{2,}/g, ' ')
+      .trim()
+  );
 }
 
 /** Try parsing pipe-delimited format: surah|ayah|text */
